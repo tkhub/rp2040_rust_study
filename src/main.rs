@@ -109,26 +109,18 @@ fn main() -> ! {
 
     // Configure GPIO26 as an ADC input
     let mut adc_pin_0 = pins.gpio26.into_floating_input();
-    let mut ftest = 3.141592f32;
-    let mut flg: bool = true;
     loop {
         // Read the raw ADC counts from the temperature sensor channel.
         let temp_sens_adc_counts: u16 = adc.read(&mut temperature_sensor).unwrap();
         let pin_adc_counts: u16 = adc.read(&mut adc_pin_0).unwrap();
+        let tempsensor = 27.0 - (((temp_sens_adc_counts as f32) * 3.3 / 4096.0) - 0.706) / 0.001721;
+        let voltage = pin_adc_counts as f32 * 3.3 / 4096.0;
         writeln!(
             uart,
-            "ADC readings: Temperature: {:02} Pin: {:02}\r\n",
-            temp_sens_adc_counts, pin_adc_counts
+            "ADC readings: Temperature: {:02}\tPin: {:02}\r\n",
+            tempsensor, voltage
         )
         .unwrap();
-        if flg{
-            flg = false;
-            ftest = ftest * 2.0;
-        }
-        else{
-            flg = true;
-            ftest = ftest * 0.5;
-        }
         delay.delay_ms(1000);
         
     }
